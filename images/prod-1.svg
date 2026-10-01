@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 980" role="img" aria-label="Melzinho do Amor">
+  <defs>
+    <radialGradient id="bg" cx="68%" cy="17%" r="78%">
+      <stop offset="0" stop-color="#ffe8b7"/>
+      <stop offset=".42" stop-color="#cf2d38"/>
+      <stop offset="1" stop-color="#4a070d"/>
+    </radialGradient>
+    <linearGradient id="foil" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff2bf"/>
+      <stop offset=".45" stop-color="#d79a29"/>
+      <stop offset="1" stop-color="#7a2f0d"/>
+    </linearGradient>
+    <linearGradient id="sachet" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff4dc"/>
+      <stop offset=".5" stop-color="#f0b33e"/>
+      <stop offset="1" stop-color="#9a4317"/>
+    </linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#250306" flood-opacity=".38"/>
+    </filter>
+  </defs>
+  <rect width="900" height="980" fill="url(#bg)"/>
+  <circle cx="728" cy="138" r="152" fill="#fff" opacity=".16"/>
+  <circle cx="752" cy="178" r="228" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="2"/>
+  <circle cx="126" cy="802" r="210" fill="#120306" opacity=".14"/>
+  <g filter="url(#shadow)" transform="rotate(-10 450 520)">
+    <rect x="272" y="195" width="356" height="560" rx="56" fill="url(#sachet)"/>
+    <path d="M300 226h300v100c-58 28-105 6-154 42-59 44-103 35-146 14Z" fill="#fff8df" opacity=".55"/>
+    <path d="M328 193h244v66H328z" fill="url(#foil)"/>
+    <path d="M328 690h244v72H328z" fill="url(#foil)"/>
+    <rect x="340" y="372" width="220" height="174" rx="26" fill="#5f070e" opacity=".9"/>
+    <text x="450" y="445" text-anchor="middle" font-family="Georgia,serif" font-size="46" font-weight="700" fill="#fff6db">Melzinho</text>
+    <text x="450" y="496" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="#ffd96f">do Amor</text>
+    <path d="M448 574c47-44 102-18 102 30 0 61-102 108-102 108S346 665 346 604c0-48 55-74 102-30Z" fill="#b51020"/>
+    <path d="M448 574c47-44 102-18 102 30 0 61-102 108-102 108S346 665 346 604c0-48 55-74 102-30Z" fill="#fff" opacity=".08"/>
+  </g>
+  <path d="M177 186c70 34 103 87 98 158-79-18-125-69-98-158Z" fill="#fff6d6" opacity=".52"/>
+  <path d="M691 740c54 8 89 38 105 91-58 17-104-7-105-91Z" fill="#ffd56f" opacity=".5"/>
+</svg>
