@@ -35,3 +35,14 @@ O PIN do painel e a simulação de pagamento existem apenas para demonstração 
 - escape de dados cadastrados antes da exibição;
 - mensagem de WhatsApp com itens, entrega e observação;
 - atributos básicos de acessibilidade no gate de idade.
+
+
+## Catálogo centralizado (em homologação, branch `feature/catalogo-supabase-20261105`)
+
+Esta branch acrescenta painel protegido em `admin.html`, com dados em Supabase independente da loja. A proprietária poderá editar preço, nome, estoque, foto e disponibilidade pelo celular; a vitrine pública lê os dados compartilhados do banco. Os 4 itens iniciais são rascunhos, sem publicação automática.
+
+O checkout permanece **fictício**, sem aceitar pagamento, enviar pedidos ou diminuir o estoque centralizado. A versão pública anterior do site permanece preservada na branch `feature/homologacao-20261105`.
+
+**Acesso:** a conta da proprietária precisa ser criada e autorizada no painel Supabase antes de ser usada. Não existe registro público ou PIN de teste no painel novo. Instruções, permissões, URLs e roteiro de testes: [docs/CATALOGO_SUPABASE.md](docs/CATALOGO_SUPABASE.md).
+
+**Chaves:** `catalog-config.js` contém somente a chave publishable projetada para uso público. Nunca incluir service_role, senhas ou segredos no repositório.
