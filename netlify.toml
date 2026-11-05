@@ -1,0 +1,16 @@
+# Homologação estática (sem build). A branch main permanece preservada.
+[build]
+  publish = "."
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Todos os deploys são de demonstração até aprovação formal.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "geolocation=(), microphone=(), payment=()"
