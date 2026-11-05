@@ -1,0 +1,33 @@
+name: Homologação Douce Seduction
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: npm install --no-save --no-package-lock @playwright/test@1.56.1 http-server@14.1.1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test desktop and mobile
+        run: npx playwright test --config=playwright.config.cjs
+      - name: Upload reports and screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: homologacao-e2e
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
