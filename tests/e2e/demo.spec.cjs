@@ -71,4 +71,6 @@ test('admin entry goes to separate authenticated management UI',async({page})=>{
   await expect(page.locator('#email')).toHaveAttribute('type','email');
   await expect(page.locator('#password')).toHaveAttribute('type','password');
   await expect(page.locator('#productForm')).toBeAttached();
+  await expect(page.locator('#login')).toBeVisible({timeout:15000});
+  await expect(page.locator('#dashboard')).toBeHidden();
 });
