@@ -79,6 +79,11 @@ input,select,textarea{background:#211820;color:#f6eee6;border-color:var(--line)}
 @media(min-width:620px){.grid{grid-template-columns:repeat(4,1fr);gap:16px}.hero{min-height:445px;padding:48px 34px}.hero h1{font-size:60px}.name{font-size:15px}}
 @media(max-width:390px){.hero{min-height:355px;padding:27px 20px}.hero h1{font-size:38px}.section-title h2{font-size:26px}.logo{width:42px;height:42px}.brand b{font-size:18px}.grid{gap:9px}.cardbody{padding:10px}}
 
+
+.catalog-status{padding:7px 17px 15px;color:#d6b89e;font-size:12px;line-height:1.5}
+.catalog-status.error{color:#ffb2ba}
+#grid .empty{grid-column:1/-1;padding:32px 14px;border:1px solid rgba(212,170,104,.22);border-radius:18px;background:rgba(28,16,21,.5)}
+
 </style>
 </head>
 <body>
@@ -86,6 +91,7 @@ input,select,textarea{background:#211820;color:#f6eee6;border-color:var(--line)}
 <div class="demo-ribbon">HOMOLOGAÇÃO · SEM VENDAS OU PAGAMENTOS REAIS</div><header><div class="logo">DS</div><div class="brand"><b>Douce Seduction</b><small>BOUTIQUE ÍNTIMA • 18+</small></div><button class="iconbtn" id="notifyBtn" title="Sobre o teste" aria-label="Sobre a demonstração">ⓘ</button><button class="iconbtn" id="adminBtn" title="Painel demonstrativo" aria-label="Abrir painel de teste">⚙</button></header>
 <section class="hero"><div class="eyebrow">DESCUBRA NOVAS SENSAÇÕES</div><h1>Prazer também é autocuidado.</h1><p>Uma experiência discreta e sofisticada para explorar o bem-estar íntimo com liberdade e elegância.</p><div class="hero-tags"><span>18+</span><span>Catálogo demonstrativo</span><span>Sem pagamento real</span></div><button class="hero-cta" id="exploreProducts" type="button">EXPLORAR COLEÇÃO ›</button></section>
 <div class="section-title" id="catalogo"><small>SELEÇÃO ESPECIAL</small><h2>Desejos em destaque</h2></div><div class="searchbox"><label for="productSearch">BUSCAR PRODUTOS</label><input type="search" id="productSearch" autocomplete="off" placeholder="Nome ou categoria" aria-label="Buscar produtos"></div><div class="chips" id="chips"></div>
+<div class="catalog-status" id="catalogStatus" role="status" aria-live="polite">Buscando produtos publicados…</div>
 <main class="grid" id="grid"></main>
 <div class="footer-note">Catálogo e pedidos apenas demonstrativos. Nenhuma compra real é realizada.</div>
 </div>
@@ -98,9 +104,8 @@ input,select,textarea{background:#211820;color:#f6eee6;border-color:var(--line)}
 
 <div class="overlay hidden" id="paymentModal"><div class="sheet"><div class="sheethead"><h2>Pedido criado</h2><button class="close" data-close="paymentModal">×</button></div><div id="paymentContent"></div><pre id="demoMessage" class="demo-message hidden" aria-live="polite"></pre></div></div>
 
-<div class="overlay hidden" id="adminModal"><div class="sheet"><div class="sheethead"><h2>Painel da loja</h2><button class="close" data-close="adminModal">×</button></div><div class="admin-tabs"><button class="active" data-tab="products">Produtos</button><button data-tab="orders">Pedidos</button><button data-tab="new">+ Novo</button></div><div id="adminContent"></div></div></div>
-
 <div class="toast hidden" id="toast"></div>
+<script src="./catalog-config.js"></script>
 <script>
 const seedProducts = [
 {id:'p1',name:'Melzinho do Amor',price:30,category:'Comestíveis',stock:5,active:true,image:'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 600 600\'%3E%3Cdefs%3E%3ClinearGradient id=\'g\' x2=\'1\' y2=\'1\'%3E%3Cstop stop-color=\'%23f8dedc\'/%3E%3Cstop offset=\'1\' stop-color=\'%23a81724\'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=\'600\' height=\'600\' fill=\'url(%23g)\'/%3E%3Ctext x=\'300\' y=\'290\' text-anchor=\'middle\' font-family=\'Georgia\' font-size=\'80\' fill=\'white\'%3EDS%3C/text%3E%3Ctext x=\'300\' y=\'360\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'26\' fill=\'white\'%3EDouce Séduction%3C/text%3E%3C/svg%3E'},
@@ -111,7 +116,7 @@ const seedProducts = [
 const seedImages={p1:'images/prod-1.svg',p2:'images/prod-2.webp',p3:'images/prod-3.webp',p4:'images/prod-4.webp'};
 seedProducts.forEach(p=>{if(seedImages[p.id])p.image=seedImages[p.id]});
 const K={products:'douce_demo_20261105_p',cart:'douce_demo_20261105_c',orders:'douce_demo_20261105_o',age:'douce_demo_20261105_a'};
-let products=JSON.parse(localStorage.getItem(K.products)||'null')||seedProducts;
+let products=[]; // Em catálogo conectado, produtos vêm exclusivamente do Supabase.
 let cart=JSON.parse(localStorage.getItem(K.cart)||'{}');
 let orders=JSON.parse(localStorage.getItem(K.orders)||'[]');
 let filter='Todos', searchText='', editingId=null, tempImage='';
@@ -119,37 +124,38 @@ products.forEach(p=>{if(seedImages[p.id]&&String(p.image||'').includes('data:ima
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validImage=v=>typeof v==='string'&&(v.startsWith('data:image/')||v.startsWith('https://')||/^images\/[-\w.]+$/.test(v));
-const save=()=>{localStorage.setItem(K.products,JSON.stringify(products));localStorage.setItem(K.cart,JSON.stringify(cart));localStorage.setItem(K.orders,JSON.stringify(orders));};
+const save=()=>{localStorage.setItem(K.cart,JSON.stringify(cart));localStorage.setItem(K.orders,JSON.stringify(orders));};
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.remove('hidden');setTimeout(()=>e.classList.add('hidden'),1800)}
 function render(){renderChips();renderGrid();renderCartBar();save()}
-function renderChips(){const cats=['Todos',...new Set(products.filter(p=>p.active).map(p=>p.category))];chips.innerHTML=cats.map(c=>`<button class="chip ${filter===c?'active':''}" onclick="filter='${esc(c).replaceAll("'","\\'")}';render()">${esc(c)}</button>`).join('')}
-function renderGrid(){const ps=products.filter(p=>p.active&&(filter==='Todos'||filter===p.category)&&(!searchText||(p.name+' '+p.category).toLocaleLowerCase('pt-BR').includes(searchText)));grid.innerHTML=ps.length?ps.map((p,i)=>`<article class="card" style="animation-delay:${Math.min(i*45,220)}ms"><div class="photo"><img src="${validImage(p.image)?p.image:''}" alt="${esc(p.name)}"><span class="badge">${esc(p.category)}</span></div><div class="cardbody"><div class="name">${esc(p.name)}</div><div class="price">${money(p.price)}</div><div class="stock">${p.stock>0?p.stock+' em estoque':'Indisponível'}</div><button class="buy" ${p.stock<=0?'disabled':''} onclick="addCart('${esc(p.id)}')">${p.stock>0?'Adicionar':'Sem estoque'}</button></div></article>`).join(''):'<div class="empty">Nenhum produto nesta categoria.</div>'}
+function renderChips(){
+  const cats=['Todos',...new Set(products.filter(p=>p.active).map(p=>p.category))];
+  chips.replaceChildren();
+  cats.forEach(c=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='chip'+(filter===c?' active':'');
+    b.textContent=c; b.setAttribute('aria-pressed',String(filter===c));
+    b.onclick=()=>{filter=c;renderChips();renderGrid()};
+    chips.append(b);
+  });
+}
+function renderGrid(){const ps=products.filter(p=>p.active&&(filter==='Todos'||filter===p.category)&&(!searchText||(p.name+' '+p.category).toLocaleLowerCase('pt-BR').includes(searchText)));grid.innerHTML=ps.length?ps.map((p,i)=>`<article class="card" style="animation-delay:${Math.min(i*45,220)}ms"><div class="photo"><img src="${validImage(p.image)?esc(p.image):''}" alt="${esc(p.name)}"><span class="badge">${esc(p.category)}</span></div><div class="cardbody"><div class="name">${esc(p.name)}</div><div class="price">${money(p.price)}</div><div class="stock">${p.stock>0?p.stock+' em estoque':'Indisponível'}</div><button class="buy" ${p.stock<=0?'disabled':''} onclick="addCart('${esc(p.id)}')">${p.stock>0?'Adicionar':'Sem estoque'}</button></div></article>`).join(''):'<div class="empty">Nenhum produto publicado nesta categoria.</div>'}
 function bumpCart(){cartbar.classList.remove('bump');void cartbar.offsetWidth;cartbar.classList.add('bump')}
 function addCart(id){const p=products.find(x=>x.id===id); if(!p||p.stock<=0)return; cart[id]=Math.min((cart[id]||0)+1,p.stock);renderCartBar();bumpCart();save();toast('Adicionado ao carrinho')}
 function cartRows(){return Object.entries(cart).map(([id,q])=>({p:products.find(x=>x.id===id),q})).filter(x=>x.p&&x.q>0)}
 function total(){return cartRows().reduce((s,x)=>s+x.p.price*x.q,0)}
 function renderCartBar(){const n=cartRows().reduce((s,x)=>s+x.q,0);cartCount.textContent=n?`${n} item${n>1?'s':''} no carrinho`:'Carrinho vazio';cartTotal.textContent=money(total())}
-function openCart(){const rows=cartRows();cartItems.innerHTML=rows.length?rows.map(x=>`<div class="lineitem"><img src="${validImage(x.p.image)?x.p.image:''}" alt="${esc(x.p.name)}"><div><b>${esc(x.p.name)}</b><div>${money(x.p.price)}</div></div><div class="qty"><button onclick="qty('${esc(x.p.id)}',-1)" aria-label="Diminuir">−</button><b>${x.q}</b><button onclick="qty('${esc(x.p.id)}',1)" aria-label="Aumentar">+</button></div></div>`).join(''):'<div class="empty">Seu carrinho está vazio.</div>';modalTotal.textContent=money(total());cartModal.classList.remove('hidden')}
+function openCart(){const rows=cartRows();cartItems.innerHTML=rows.length?rows.map(x=>`<div class="lineitem"><img src="${validImage(x.p.image)?esc(x.p.image):''}" alt="${esc(x.p.name)}"><div><b>${esc(x.p.name)}</b><div>${money(x.p.price)}</div></div><div class="qty"><button onclick="qty('${esc(x.p.id)}',-1)" aria-label="Diminuir">−</button><b>${x.q}</b><button onclick="qty('${esc(x.p.id)}',1)" aria-label="Aumentar">+</button></div></div>`).join(''):'<div class="empty">Seu carrinho está vazio.</div>';modalTotal.textContent=money(total());cartModal.classList.remove('hidden')}
 function qty(id,d){const p=products.find(x=>x.id===id);cart[id]=Math.max(0,Math.min((cart[id]||0)+d,p.stock));if(!cart[id])delete cart[id];openCart();renderCartBar();save()}
 function close(id){document.getElementById(id).classList.add('hidden')}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>close(b.dataset.close));document.getElementById('openCart').onclick=openCart;
 goCheckout.onclick=()=>{if(!cartRows().length)return toast('Carrinho vazio');close('cartModal');checkoutModal.classList.remove('hidden')};
 placeOrder.onclick=()=>{const name=customerName.value.trim(), phone=customerPhone.value.replace(/\D/g,'');if(name.length<2||phone.length<10)return toast('Informe nome e WhatsApp válidos');const rows=cartRows();if(!rows.length)return toast('Carrinho vazio');if(rows.some(x=>x.q>x.p.stock))return toast('Algum produto ficou sem estoque');const id='PED'+String(Date.now()).slice(-6);const o={id,name,phone,delivery:deliveryType.value,note:orderNote.value.trim().slice(0,500),items:rows.map(x=>({id:x.p.id,name:x.p.name,price:x.p.price,q:x.q})),total:total(),status:'awaiting_payment',createdAt:new Date().toISOString()};orders.unshift(o);cart={};save();renderCartBar();close('checkoutModal');showPayment(o)};
 function showPayment(o){paymentContent.innerHTML=`<div class="paybox"><b>${esc(o.id)}</b><p>Total: <b>${money(o.total)}</b></p><p>Status: <b>Aguardando pagamento</b></p></div><button class="primary" style="margin-top:12px" onclick="simulatePaid('${esc(o.id)}')">Simular pagamento aprovado</button><button class="secondary" onclick="sendWhats('${esc(o.id)}')">Visualizar mensagem fictícia</button><button class="secondary" onclick="close('paymentModal')">Fechar</button><div class="notice">Pagamento demonstrativo, sem movimentação financeira.</div>`;paymentModal.classList.remove('hidden')}
-function simulatePaid(id){const o=orders.find(x=>x.id===id);if(!o)return;if(o.status==='paid'){toast('Este pedido já foi marcado como pago');return}if(o.items.some(it=>{const p=products.find(x=>x.id===it.id);return !p||p.stock<it.q}))return toast('Estoque insuficiente para este pedido');o.status='paid';o.paidAt=new Date().toISOString();for(const it of o.items){const p=products.find(x=>x.id===it.id);p.stock-=it.q}save();render();paymentContent.innerHTML=`<div class="paid-ok">✅ Pagamento fictício aprovado; nenhum pedido real foi realizado.</div><div class="paybox"><b>${esc(o.id)}</b><p>${esc(o.name)} • ${esc(o.phone)}</p><p>Total: <b>${money(o.total)}</b></p></div><button class="primary" onclick="sendWhats('${esc(o.id)}')">Visualizar mensagem fictícia</button><button class="secondary" onclick="close('paymentModal')">Concluir</button>`;notifySale(o);}
+function simulatePaid(id){const o=orders.find(x=>x.id===id);if(!o)return;if(o.status==='paid'){toast('Este pedido já foi marcado como pago');return}if(o.items.some(it=>{const p=products.find(x=>x.id===it.id);return !p||p.stock<it.q}))return toast('Estoque insuficiente para este pedido');o.status='paid';o.paidAt=new Date().toISOString();/* Não alterar estoque real após pagamento fictício. */ save();render();paymentContent.innerHTML=`<div class="paid-ok">✅ Pagamento fictício aprovado; nenhum pedido real foi realizado.</div><div class="paybox"><b>${esc(o.id)}</b><p>${esc(o.name)} • ${esc(o.phone)}</p><p>Total: <b>${money(o.total)}</b></p></div><button class="primary" onclick="sendWhats('${esc(o.id)}')">Visualizar mensagem fictícia</button><button class="secondary" onclick="close('paymentModal')">Concluir</button>`;notifySale(o);}
 function sendWhats(id){const o=orders.find(x=>x.id===id);if(!o)return;const box=document.getElementById('demoMessage');box.textContent=['PRÉVIA FICTÍCIA - NÃO ENVIADA','Pedido: '+o.id,'Itens: '+o.items.map(i=>i.q+'x '+i.name).join(', '),'Total: '+money(o.total),'Entrega: '+o.delivery].join('\n');box.classList.remove('hidden');toast('Prévia local, nenhuma mensagem enviada')}
 function notifySale(o){toast('Pagamento fictício aprovado, sem venda real')}
 notifyBtn.onclick=()=>toast('DEMO: sem notificações reais');
-adminBtn.onclick=()=>{/* Local demo only. This is not an authenticated production panel. */ adminModal.classList.remove('hidden');renderAdmin('products')};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderAdmin(b.dataset.tab)});
-function renderAdmin(tab){if(tab==='products'){adminContent.innerHTML=products.map(p=>`<div class="admin-product"><img src="${validImage(p.image)?p.image:''}" alt=""><div><b>${esc(p.name)}</b><div style="font-size:12px;color:#786f67">${money(p.price)} • est. ${p.stock} • ${p.active?'ativo':'inativo'}</div></div><div><button class="mini edit" onclick="editProduct('${esc(p.id)}')">Editar</button><button class="mini del" onclick="delProduct('${esc(p.id)}')">Excluir</button></div></div>`).join('')||'<div class="empty">Sem produtos.</div>'}
-else if(tab==='orders'){adminContent.innerHTML=orders.length?orders.map(o=>`<div class="order"><div class="row"><b>${esc(o.id)}</b><span class="status ${o.status==='paid'?'paid':''}">${o.status==='paid'?'PAGO':'AGUARDANDO'}</span></div><div style="margin:7px 0">${esc(o.name)} • ${money(o.total)}</div><div style="font-size:12px;color:#756b62">${o.items.map(i=>i.q+'× '+esc(i.name)).join(' · ')}</div>${o.status!=='paid'?`<button class="secondary" onclick="simulatePaid('${esc(o.id)}');renderAdmin('orders')">Marcar pago (teste)</button>`:''}</div>`).join(''):'<div class="empty">Ainda não há pedidos.</div>'}
-else{newProductForm()}}
-function newProductForm(p=null){editingId=p?.id||null;tempImage=p?.image||'';adminContent.innerHTML=`<label>Foto</label><input type="file" accept="image/*" capture="environment" id="photoInput"><div id="preview">${tempImage?`<img src="${tempImage}" style="width:110px;height:110px;object-fit:cover;border-radius:14px;margin-top:10px">`:''}</div><label>Nome</label><input id="pname" value="${p?.name||''}" placeholder="Nome do produto"><label>Preço</label><input id="pprice" inputmode="decimal" value="${p?.price||''}" placeholder="35,00"><label>Categoria</label><input id="pcat" value="${p?.category||''}" placeholder="Ex.: Acessórios"><label>Estoque</label><input id="pstock" inputmode="numeric" value="${p?.stock??1}"><label><input type="checkbox" id="pactive" style="width:auto" ${p?.active===false?'':'checked'}> Produto ativo</label><button class="primary" style="margin-top:15px" id="saveProduct">Salvar produto</button><div class="notice">A foto é comprimida no próprio celular antes de ser salva nesta demo.</div>`;photoInput.onchange=e=>compressImage(e.target.files[0]);saveProduct.onclick=saveProductData}
-async function compressImage(file){if(!file)return;const img=new Image(),r=new FileReader();r.onload=()=>img.src=r.result;r.readAsDataURL(file);img.onload=()=>{const max=900,scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=img.width*scale;c.height=img.height*scale;c.getContext('2d').drawImage(img,0,0,c.width,c.height);tempImage=c.toDataURL('image/jpeg',.76);preview.innerHTML=`<img src="${tempImage}" style="width:110px;height:110px;object-fit:cover;border-radius:14px;margin-top:10px">`}}
-function saveProductData(){const name=pname.value.trim(),price=parseFloat(pprice.value.replace(',','.')),cat=pcat.value.trim(),stock=parseInt(pstock.value||0,10);if(name.length<2||name.length>100||!Number.isFinite(price)||price<=0||price>100000||cat.length<2||cat.length>50||!Number.isInteger(stock)||stock<0||stock>100000||!validImage(tempImage))return toast('Revise nome, preço, categoria, estoque e foto');if(editingId){const p=products.find(x=>x.id===editingId);Object.assign(p,{name,price,category:cat,stock,active:pactive.checked,image:tempImage})}else products.unshift({id:'p'+Date.now(),name,price,category:cat,stock,active:pactive.checked,image:tempImage});save();render();renderAdmin('products');toast('Produto salvo')}
-function editProduct(id){newProductForm(products.find(x=>x.id===id))}
-function delProduct(id){if(confirm('Excluir este produto?')){products=products.filter(x=>x.id!==id);delete cart[id];save();render();renderAdmin('products')}}
+adminBtn.onclick=()=>{window.location.assign('./admin.html')};
 if(localStorage.getItem(K.age)==='1')ageGate.classList.add('hidden');ageYes.onclick=()=>{localStorage.setItem(K.age,'1');ageGate.classList.add('hidden')};
 render();
 document.getElementById('productSearch').addEventListener('input',e=>{searchText=e.target.value.trim().toLocaleLowerCase('pt-BR');renderGrid()});
@@ -158,6 +164,64 @@ document.getElementById('goHome').onclick=()=>window.scrollTo({top:0,behavior:'s
 document.getElementById('goCatalog').onclick=()=>document.getElementById('catalogo').scrollIntoView({behavior:'smooth'});
 document.getElementById('goCart').onclick=openCart;
 document.getElementById('goAdmin').onclick=()=>document.getElementById('adminBtn').click();
+
+/* Catálogo público: leitura segura e exclusiva do Supabase.
+ * A chave publishable é PÚBLICA, não concede acesso ao estoque de pedidos.
+ * Postagens/edições somente no painel autenticado. */
+const CATALOG_CONFIG=window.DOUCE_CATALOG_CONFIG||{};
+const CATALOG_URL=CATALOG_CONFIG.url;
+const CATALOG_KEY=CATALOG_CONFIG.publishableKey;
+let catalogInFlight=false;
+async function reloadPublicCatalog(){
+ if(catalogInFlight)return;
+ catalogInFlight=true;
+ const status=document.getElementById('catalogStatus');
+ status.textContent='Sincronizando catálogo da loja…';
+ status.classList.remove('error');
+ try{
+   if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(CATALOG_URL||'')||!/^sb_publishable_/.test(CATALOG_KEY||'')){
+     throw new Error('Catálogo remoto ainda não configurado.');
+   }
+   const api=new URL(CATALOG_URL+'/rest/v1/douce_products');
+   api.searchParams.set('select','id,name,category,price,stock,active,image_path,image_url');
+   api.searchParams.set('active','eq.true');
+   api.searchParams.set('order','created_at.desc');
+   const response=await fetch(api.toString(),{
+     headers:{'apikey':CATALOG_KEY,'Accept':'application/json'},
+     cache:'no-store',
+     signal:AbortSignal.timeout(12000)
+   });
+   if(!response.ok)throw new Error('Erro ao consultar catálogo ('+response.status+').');
+   const data=await response.json();
+   if(!Array.isArray(data))throw new Error('Resposta inválida do catálogo.');
+   products=data.map(p=>{
+      const path=p.image_path;
+      const image=typeof path==='string'&&/^products\/[a-z0-9-]+\.(jpg|jpeg|png|webp)$/.test(path)
+       ? CATALOG_URL+'/storage/v1/object/public/douce-catalog/'+path
+       : (/^https:\/\//.test(p.image_url||'')?p.image_url:'');
+      return {...p,price:Number(p.price),stock:Number(p.stock),image};
+   }).filter(p=>p.active);
+   for(const id of Object.keys(cart)){
+     const p=products.find(x=>x.id===id);
+     if(!p||p.stock<=0)delete cart[id];
+     else cart[id]=Math.max(0,Math.min(Number(cart[id])||0,p.stock));
+   }
+   if(filter!=='Todos'&&!products.some(x=>x.category===filter))filter='Todos';
+   render();
+   status.textContent=products.length
+     ? products.length+' produto'+(products.length===1?'':'s')+' no catálogo. Informações atualizadas automaticamente.'
+     : 'Nenhum produto publicado. A proprietária pode adicionar e publicar pelo painel.';
+ }catch(error){
+   status.classList.add('error');
+   status.textContent='Catálogo indisponível no momento. Atualize a página para tentar novamente.';
+   products=[];cart={};render();
+   console.error('Erro no catálogo remoto:',error);
+ }finally{catalogInFlight=false;}
+}
+reloadPublicCatalog();
+setInterval(reloadPublicCatalog,60000);
+window.addEventListener('focus',reloadPublicCatalog);
+
 </script>
 </body>
 </html>
