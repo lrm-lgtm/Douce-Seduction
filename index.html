@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#4c0d16">
-<meta name="description" content="Douce Séduction — catálogo boutique adulto com compra discreta.">
-<title>Douce Séduction</title>
+<meta name="theme-color" content="#080708"><meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="description" content="Prévia de homologação da boutique Douce Seduction. Sem vendas ou pagamentos reais.">
+<title>Douce Seduction — Dark Luxury · Demo</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
 :root{--bg:#f8f1ec;--paper:#fffdfa;--card:#fffdfb;--ink:#251c1d;--muted:#7b6e6d;--wine:#4c0d16;--wine2:#751725;--rose:#ead3d0;--blush:#f4e6e2;--gold:#b98b4d;--gold-soft:#e8d5b5;--line:#eaded9;--ok:#277452;--danger:#a83b45;--shadow:0 18px 45px rgba(62,18,24,.10);--shadow-soft:0 8px 24px rgba(62,18,24,.07)}
@@ -46,15 +46,14 @@ input,select,textarea{width:100%;border:1px solid #ddcec9;border-radius:13px;pad
 </head>
 <body>
 <div class="app">
-<header><div class="logo">D</div><div class="brand"><b>Douce Séduction</b><small>boutique íntima • 18+</small></div><button class="iconbtn" id="notifyBtn" title="Ativar notificações">🔔</button><button class="iconbtn" id="adminBtn" title="Painel">⚙️</button></header>
-<section class="hero"><div class="eyebrow">CURADORIA DOUCE</div><h1>Prazer com elegância.</h1><p>Uma seleção íntima, discreta e sem complicação — do catálogo ao pedido.</p><div class="hero-tags"><span>18+</span><span>Pix</span><span>Entrega discreta</span><span>Compra segura</span></div></section>
-<div class="chips" id="chips"></div>
+<div class="demo-ribbon">HOMOLOGAÇÃO · SEM VENDAS OU PAGAMENTOS REAIS</div><header><div class="logo">DS</div><div class="brand"><b>Douce Seduction</b><small>BOUTIQUE ÍNTIMA • 18+</small></div><button class="iconbtn" id="notifyBtn" title="Sobre o teste" aria-label="Sobre a demonstração">ⓘ</button><button class="iconbtn" id="adminBtn" title="Painel demonstrativo" aria-label="Abrir painel de teste">⚙</button></header>
+<section class="hero"><div class="eyebrow">DESCUBRA NOVAS SENSAÇÕES</div><h1>Prazer também é autocuidado.</h1><p>Uma experiência discreta e sofisticada para explorar o bem-estar íntimo com liberdade e elegância.</p><div class="hero-tags"><span>18+</span><span>Catálogo demonstrativo</span><span>Sem pagamento real</span></div><button class="hero-cta" id="exploreProducts" type="button">EXPLORAR COLEÇÃO ›</button></section>
+<div class="section-title" id="catalogo"><small>SELEÇÃO ESPECIAL</small><h2>Desejos em destaque</h2></div><div class="searchbox"><label for="productSearch">BUSCAR PRODUTOS</label><input type="search" id="productSearch" autocomplete="off" placeholder="Nome ou categoria" aria-label="Buscar produtos"></div><div class="chips" id="chips"></div>
 <main class="grid" id="grid"></main>
-<div class="footer-note">Catálogo demonstrativo • nenhum pagamento real é processado.</div>
+<div class="footer-note">Catálogo e pedidos apenas demonstrativos. Nenhuma compra real é realizada.</div>
 </div>
-<div class="cartbar" id="cartbar"><div class="txt"><b id="cartCount">Carrinho vazio</b><small id="cartTotal">R$ 0,00</small></div><button id="openCart">Ver carrinho</button></div>
-
-<div class="overlay age" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageTitle"><div class="agebox"><div class="round">18+</div><h2 id="ageTitle">Bem-vindo à Douce Séduction</h2><p>Este catálogo contém produtos de uso adulto. Ao continuar, você declara ter 18 anos ou mais.</p><button class="primary" id="ageYes">Tenho 18 anos ou mais</button><button class="secondary" onclick="document.body.innerHTML='<div style=\'font-family:system-ui;padding:40px;text-align:center\'>Acesso encerrado.</div>'">Sair</button></div></div>
+<div class="cartbar" id="cartbar"><div class="txt"><b id="cartCount">Carrinho vazio</b><small id="cartTotal">R$ 0,00</small></div><button id="openCart">Ver carrinho</button></div><nav class="demo-nav" aria-label="Navegação"><button id="goHome" type="button"><b>⌂</b>Início</button><button id="goCatalog" type="button"><b>◇</b>Catálogo</button><button id="goCart" type="button"><b>♧</b>Carrinho</button><button id="goAdmin" type="button"><b>⚙</b>Painel</button></nav>
+<div class="overlay age" id="ageGate" role="dialog" aria-modal="true" aria-labelledby="ageTitle"><div class="agebox"><div class="round">18+</div><h2 id="ageTitle">Bem-vindo à Douce Seduction</h2><p>Este catálogo contém produtos de uso adulto. Ao continuar, você declara ter 18 anos ou mais.</p><button class="primary" id="ageYes">Tenho 18 anos ou mais</button><button class="secondary" onclick="document.body.innerHTML='<div style=\'font-family:system-ui;padding:40px;text-align:center\'>Acesso encerrado.</div>'">Sair</button></div></div>
 
 <div class="overlay hidden" id="cartModal"><div class="sheet"><div class="sheethead"><h2>Seu carrinho</h2><button class="close" data-close="cartModal">×</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="modalTotal">R$ 0,00</span></div><button class="primary" id="goCheckout">Continuar</button></div></div>
 
@@ -78,7 +77,7 @@ const K={products:'douce_demo_20261105_p',cart:'douce_demo_20261105_c',orders:'d
 let products=JSON.parse(localStorage.getItem(K.products)||'null')||seedProducts;
 let cart=JSON.parse(localStorage.getItem(K.cart)||'{}');
 let orders=JSON.parse(localStorage.getItem(K.orders)||'[]');
-let filter='Todos', editingId=null, tempImage='';
+let filter='Todos', searchText='', editingId=null, tempImage='';
 products.forEach(p=>{if(seedImages[p.id]&&String(p.image||'').includes('data:image/svg+xml'))p.image=seedImages[p.id]});
 const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -87,7 +86,7 @@ const save=()=>{localStorage.setItem(K.products,JSON.stringify(products));localS
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.remove('hidden');setTimeout(()=>e.classList.add('hidden'),1800)}
 function render(){renderChips();renderGrid();renderCartBar();save()}
 function renderChips(){const cats=['Todos',...new Set(products.filter(p=>p.active).map(p=>p.category))];chips.innerHTML=cats.map(c=>`<button class="chip ${filter===c?'active':''}" onclick="filter='${esc(c).replaceAll("'","\\'")}';render()">${esc(c)}</button>`).join('')}
-function renderGrid(){const ps=products.filter(p=>p.active&&(filter==='Todos'||filter===p.category));grid.innerHTML=ps.length?ps.map((p,i)=>`<article class="card" style="animation-delay:${Math.min(i*45,220)}ms"><div class="photo"><img src="${validImage(p.image)?p.image:''}" alt="${esc(p.name)}"><span class="badge">${esc(p.category)}</span></div><div class="cardbody"><div class="name">${esc(p.name)}</div><div class="price">${money(p.price)}</div><div class="stock">${p.stock>0?p.stock+' em estoque':'Indisponível'}</div><button class="buy" ${p.stock<=0?'disabled':''} onclick="addCart('${esc(p.id)}')">${p.stock>0?'Adicionar':'Sem estoque'}</button></div></article>`).join(''):'<div class="empty">Nenhum produto nesta categoria.</div>'}
+function renderGrid(){const ps=products.filter(p=>p.active&&(filter==='Todos'||filter===p.category)&&(!searchText||(p.name+' '+p.category).toLocaleLowerCase('pt-BR').includes(searchText)));grid.innerHTML=ps.length?ps.map((p,i)=>`<article class="card" style="animation-delay:${Math.min(i*45,220)}ms"><div class="photo"><img src="${validImage(p.image)?p.image:''}" alt="${esc(p.name)}"><span class="badge">${esc(p.category)}</span></div><div class="cardbody"><div class="name">${esc(p.name)}</div><div class="price">${money(p.price)}</div><div class="stock">${p.stock>0?p.stock+' em estoque':'Indisponível'}</div><button class="buy" ${p.stock<=0?'disabled':''} onclick="addCart('${esc(p.id)}')">${p.stock>0?'Adicionar':'Sem estoque'}</button></div></article>`).join(''):'<div class="empty">Nenhum produto nesta categoria.</div>'}
 function bumpCart(){cartbar.classList.remove('bump');void cartbar.offsetWidth;cartbar.classList.add('bump')}
 function addCart(id){const p=products.find(x=>x.id===id); if(!p||p.stock<=0)return; cart[id]=Math.min((cart[id]||0)+1,p.stock);renderCartBar();bumpCart();save();toast('Adicionado ao carrinho')}
 function cartRows(){return Object.entries(cart).map(([id,q])=>({p:products.find(x=>x.id===id),q})).filter(x=>x.p&&x.q>0)}
@@ -116,6 +115,12 @@ function editProduct(id){newProductForm(products.find(x=>x.id===id))}
 function delProduct(id){if(confirm('Excluir este produto?')){products=products.filter(x=>x.id!==id);delete cart[id];save();render();renderAdmin('products')}}
 if(localStorage.getItem(K.age)==='1')ageGate.classList.add('hidden');ageYes.onclick=()=>{localStorage.setItem(K.age,'1');ageGate.classList.add('hidden')};
 render();
+document.getElementById('productSearch').addEventListener('input',e=>{searchText=e.target.value.trim().toLocaleLowerCase('pt-BR');renderGrid()});
+document.getElementById('exploreProducts').onclick=()=>document.getElementById('catalogo').scrollIntoView({behavior:'smooth'});
+document.getElementById('goHome').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+document.getElementById('goCatalog').onclick=()=>document.getElementById('catalogo').scrollIntoView({behavior:'smooth'});
+document.getElementById('goCart').onclick=openCart;
+document.getElementById('goAdmin').onclick=()=>document.getElementById('adminBtn').click();
 </script>
 </body>
 </html>
